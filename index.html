@@ -1151,7 +1151,7 @@ let asteroid_cooldown_drops = 5;
 let asteroid_warning = null;     // {x, dropsLeft, side, ...} or null
 const ASTEROID_R = 20;           // smaller than the onion now
 const GRAV_NORMAL = 1.0;
-const GRAV_LOW = 0.25;
+const GRAV_LOW = 0.20;
 
 // Cheat-code sequence buffer for stage testing
 let cheatBuffer = [];
@@ -1281,8 +1281,8 @@ function init() {
   engine = Engine.create();
   engine.world.gravity.y = 1;
   // Higher solver iterations help prevent tunneling on rapid merges
-  engine.positionIterations = 10;
-  engine.velocityIterations = 8;
+  engine.positionIterations = 14;
+  engine.velocityIterations = 10;
   engine.constraintIterations = 4;
 
   render = Render.create({
@@ -1366,7 +1366,7 @@ function bowlPoint(a) {
   let rx, ry, mod;
   if (stage === 2) {
     rx = (PLATE_OPEN_W / 2) * 1.10;
-    ry = PLATE_DEPTH * 0.78;
+    ry = PLATE_DEPTH * 0.90;            // deeper than before (was 0.78) for fairer play
     // Layered noise: three sin waves with different frequencies, amplitudes,
     // and phase offsets. Phase offsets make left half ≠ right half.
     const inLowerCurve = t > 0.10 && t < 0.90;
@@ -1382,7 +1382,7 @@ function bowlPoint(a) {
   } else if (stage === 3) {
     // Less bumpy than Stage 2 — low gravity is enough of a hazard
     rx = (PLATE_OPEN_W / 2) * 1.08;
-    ry = PLATE_DEPTH * 0.85;
+    ry = PLATE_DEPTH * 0.95;             // deeper than before (was 0.85)
     const inLowerCurve = t > 0.20 && t < 0.80;
     const bump = inLowerCurve ? 0.05 * Math.sin(t * Math.PI * 5.0 + 1.3) : 0;
     mod = 1 + bump;
@@ -1632,9 +1632,9 @@ function drop() {
 
 function detonateBomb(bomb) {
   const x = bomb.position.x, y = bomb.position.y;
-  // Stronger knockback — larger radius + ~2.5× base force so heavy balls really feel it
   const radius = 180;
-  const baseForce = 0.060;
+  const baseForce = 0.052;
+  const MAX_BLAST_SPEED = 9;   // hard cap — wall is 16px so anything under ~10 px/tick is safe
   const bodies = Composite.allBodies(engine.world);
   for (const b of bodies) {
     if (b.isStatic || b === bomb) continue;
@@ -1642,13 +1642,18 @@ function detonateBomb(bomb) {
     const dy = b.position.y - y;
     const dist = Math.hypot(dx, dy);
     if (dist > radius || dist < 1) continue;
-    // Quadratic falloff feels punchier near the bomb, gentler at the edge
     const falloff = Math.pow(1 - dist / radius, 1.4);
     const dir = { x: dx / dist, y: dy / dist };
     const f = baseForce * falloff;
     Body.applyForce(b, b.position, { x: dir.x * f, y: dir.y * f - 0.012 });
-    // Also kick angular velocity so balls tumble
     Body.setAngularVelocity(b, b.angularVelocity + (Math.random() - 0.5) * 0.3);
+    // Clamp resulting velocity so a near-blast tier-0 ball can't punch through the wall
+    const v = b.velocity;
+    const sp = Math.hypot(v.x, v.y);
+    if (sp > MAX_BLAST_SPEED) {
+      const k = MAX_BLAST_SPEED / sp;
+      Body.setVelocity(b, { x: v.x * k, y: v.y * k });
+    }
   }
   // Visual explosion
   for (let i = 0; i < 28; i++) {
@@ -1963,7 +1968,6 @@ function showGravityWarning(low, countdown) {
 }
 
 function maybeSpawnAsteroid() {
-  // If a warning is queued, this drop is when the asteroid actually arrives
   if (asteroid_warning) {
     spawnAsteroidFromWarning(asteroid_warning);
     asteroid_warning = null;
@@ -1972,10 +1976,15 @@ function maybeSpawnAsteroid() {
   }
   if (asteroid_cooldown_drops > 0) { asteroid_cooldown_drops--; return; }
   if (Math.random() > 0.18) return;
-  // Pre-roll the asteroid's trajectory so we can show a telegraph marker
+  // Pre-compute the FULL trajectory now so the telegraph line matches
+  // exactly where the asteroid will go when it spawns next drop.
   const side = Math.random() < 0.5 ? -1 : 1;
   const targetX = PLATE_CENTER_X + (Math.random() - 0.5) * (PLATE_OPEN_W * 0.5);
-  asteroid_warning = { side, targetX, queuedAt: Date.now() };
+  const targetY = PLATE_OPEN_Y + 20;
+  const startX = side === -1 ? -ASTEROID_R - 5 : W + ASTEROID_R + 5;
+  const startY = 80 + Math.random() * 90;
+  const speed = 8 + Math.random() * 2;
+  asteroid_warning = { side, startX, startY, targetX, targetY, speed, queuedAt: Date.now() };
   // Show banner-style warning
   const banner = document.getElementById('bonusBanner');
   banner.textContent = '☄ ASTEROID INCOMING — ' + (side === -1 ? 'LEFT' : 'RIGHT');
@@ -2001,18 +2010,13 @@ function maybeSpawnAsteroid() {
 }
 
 function spawnAsteroidFromWarning(w) {
-  const startX = w.side === -1 ? -ASTEROID_R - 5 : W + ASTEROID_R + 5;
-  const targetX = w.targetX;
-  const targetY = PLATE_OPEN_Y + 20;
-  const startY = 80 + Math.random() * 90;
-  const dx = targetX - startX;
-  const dy = targetY - startY;
+  const dx = w.targetX - w.startX;
+  const dy = w.targetY - w.startY;
   const dist = Math.hypot(dx, dy);
-  const speed = 8 + Math.random() * 2;
-  const vx = (dx / dist) * speed;
-  const vy = (dy / dist) * speed;
+  const vx = (dx / dist) * w.speed;
+  const vy = (dy / dist) * w.speed;
 
-  const ast = Bodies.circle(startX, startY, ASTEROID_R, {
+  const ast = Bodies.circle(w.startX, w.startY, ASTEROID_R, {
     restitution: 0.3,
     friction: 0.5,
     frictionStatic: 0.6,
@@ -2190,6 +2194,19 @@ function tickWorld() {
   const now = Date.now();
   const bodies = Composite.allBodies(engine.world);
 
+  // Tunneling backstop: any body moving faster than the wall can react gets capped.
+  // 11 px/tick is well above normal gravity-fall speeds but below the wall thickness (16px).
+  const MAX_SPEED = 11;
+  for (const b of bodies) {
+    if (b.isStatic) continue;
+    const v = b.velocity;
+    const sp2 = v.x * v.x + v.y * v.y;
+    if (sp2 > MAX_SPEED * MAX_SPEED) {
+      const k = MAX_SPEED / Math.sqrt(sp2);
+      Body.setVelocity(b, { x: v.x * k, y: v.y * k });
+    }
+  }
+
   // Stage 2/3 balancing scale: compute weight-driven bowl tilt
   if (stage === 2 || stage === 3) {
     let leftMoment = 0, rightMoment = 0;
@@ -2202,8 +2219,8 @@ function tickWorld() {
       else        rightMoment += weight;
     }
     const net = rightMoment - leftMoment;
-    bowlTiltTarget = Math.max(-0.18, Math.min(0.18, net * 0.000065));
-    bowlTilt += (bowlTiltTarget - bowlTilt) * 0.05;
+    bowlTiltTarget = Math.max(-0.15, Math.min(0.15, net * 0.000045));
+    bowlTilt += (bowlTiltTarget - bowlTilt) * 0.045;
     // Decay impulse tilt from asteroid impacts
     bowlImpulseTilt *= 0.92;
     if (Math.abs(bowlImpulseTilt) < 0.0005) bowlImpulseTilt = 0;
@@ -2407,13 +2424,14 @@ function drawHUD() {
   // ---- Asteroid warning telegraph (shown until the asteroid actually spawns) ----
   if (asteroid_warning && stage === 3) {
     const w = asteroid_warning;
-    const arrowY = 100 + Math.sin(now / 180) * 6;
+    // Anchor arrow inside the canvas near the entry side, at the EXACT spawn Y
+    const arrowY = Math.max(20, Math.min(H - 20, w.startY));
     const arrowX = w.side === -1 ? 28 : W - 28;
-    const dir = w.side === -1 ? 1 : -1;     // arrow points INTO bowl
+    const dirToBowl = Math.sign(w.targetX - arrowX) || (w.side === -1 ? 1 : -1);
+    const bob = Math.sin(now / 180) * 5;
     ctx.save();
-    ctx.translate(arrowX, arrowY);
-    ctx.scale(dir, 1);
-    // Arrow shaft
+    ctx.translate(arrowX, arrowY + bob);
+    ctx.scale(dirToBowl, 1);
     ctx.strokeStyle = '#ff7a5c';
     ctx.lineWidth = 4;
     ctx.shadowColor = '#ff7a5c';
@@ -2422,7 +2440,6 @@ function drawHUD() {
     ctx.moveTo(-14, 0);
     ctx.lineTo(14, 0);
     ctx.stroke();
-    // Arrowhead
     ctx.beginPath();
     ctx.moveTo(14, 0);
     ctx.lineTo(4, -8);
@@ -2430,7 +2447,6 @@ function drawHUD() {
     ctx.lineTo(4, 8);
     ctx.stroke();
     ctx.restore();
-    // Label
     ctx.save();
     ctx.font = '700 11px "DM Mono", monospace';
     ctx.textAlign = 'center';
@@ -2438,16 +2454,33 @@ function drawHUD() {
     ctx.fillStyle = '#ff7a5c';
     ctx.shadowColor = '#ff7a5c';
     ctx.shadowBlur = 8;
-    ctx.fillText('☄', arrowX, arrowY + 18);
+    ctx.fillText('☄', arrowX, arrowY + bob + 18);
     ctx.restore();
-    // Dotted projected trajectory line from spawn edge to target
+    // Dotted line from EXACT spawn point to EXACT target so the player can read trajectory
     ctx.save();
-    ctx.strokeStyle = 'rgba(255, 122, 92, 0.35)';
-    ctx.setLineDash([3, 6]);
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(255, 122, 92, 0.5)';
+    ctx.setLineDash([4, 5]);
+    ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.moveTo(arrowX, arrowY);
-    ctx.lineTo(w.targetX, PLATE_OPEN_Y + 20);
+    ctx.moveTo(w.startX, w.startY);
+    ctx.lineTo(w.targetX, w.targetY);
+    ctx.stroke();
+    ctx.restore();
+    // Crosshair at the predicted impact point
+    ctx.save();
+    ctx.strokeStyle = '#ff7a5c';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#ff7a5c';
+    ctx.shadowBlur = 6;
+    const cross = 6;
+    ctx.beginPath();
+    ctx.moveTo(w.targetX - cross, w.targetY);
+    ctx.lineTo(w.targetX + cross, w.targetY);
+    ctx.moveTo(w.targetX, w.targetY - cross);
+    ctx.lineTo(w.targetX, w.targetY + cross);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(w.targetX, w.targetY, 4, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
