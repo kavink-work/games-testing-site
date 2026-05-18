@@ -33,11 +33,12 @@
   }
   body {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     padding: 10px;
     min-height: 100vh;
+    gap: 16px;
   }
   .stage {
     display: flex;
@@ -46,7 +47,102 @@
     gap: 10px;
     width: 100%;
     max-width: 440px;
+    flex-shrink: 0;
   }
+
+  /* ---- Side panel (instructions) ---- */
+  .side-panel {
+    width: 320px;
+    max-width: 100%;
+    background: rgba(15,10,26,0.6);
+    border: 1px solid rgba(255,212,163,0.15);
+    border-radius: 18px;
+    padding: 22px 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 80vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+    backdrop-filter: blur(6px);
+  }
+  .side-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,212,163,0.12);
+  }
+  .side-title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+  .lang-toggle {
+    display: flex;
+    background: rgba(255,212,163,0.08);
+    border: 1px solid rgba(255,212,163,0.2);
+    border-radius: 99px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .lang-btn {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: transparent;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .lang-btn.active {
+    background: var(--accent);
+    color: var(--bg-3);
+  }
+  .htp-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .htp-section h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent-hot);
+    letter-spacing: 0.01em;
+  }
+  .htp-section p, .htp-section li {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .htp-section ul {
+    padding-left: 18px;
+    margin: 2px 0;
+  }
+  .htp-section li { margin-bottom: 4px; }
+  .htp-section .key-hint {
+    background: rgba(255,212,163,0.12);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    color: var(--accent);
+  }
+  /* Hide side panel on narrower viewports — game is the priority */
+  @media (max-width: 880px) {
+    body { flex-direction: column; }
+    .side-panel { max-width: 440px; width: 100%; max-height: none; }
+  }
+
   .topbar {
     width: 100%;
     display: grid;
@@ -62,12 +158,63 @@
     letter-spacing: -0.02em;
     line-height: 1;
     color: var(--accent);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
   }
   .title em {
     font-style: italic;
     color: var(--accent-hot);
     font-weight: 500;
   }
+
+  /* ---- Hidden cheat panel (5 taps on title to reveal) ---- */
+  .cheat-panel {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px 6px 12px;
+    background: rgba(255, 122, 92, 0.15);
+    border: 1px dashed rgba(255, 122, 92, 0.5);
+    border-radius: 10px;
+    margin-top: 6px;
+  }
+  .cheat-panel.show { display: inline-flex; }
+  .cheat-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-hot);
+  }
+  .cheat-stage-btn {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text);
+    background: rgba(255, 212, 163, 0.1);
+    border: 1px solid rgba(255, 212, 163, 0.3);
+    padding: 4px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+  }
+  .cheat-stage-btn:hover {
+    background: rgba(255, 212, 163, 0.25);
+    color: var(--accent);
+  }
+  .cheat-stage-btn:active { transform: translateY(1px); }
+  .cheat-close {
+    font-size: 16px;
+    line-height: 1;
+    color: var(--text-dim);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 2px 6px;
+    margin-left: 2px;
+  }
+  .cheat-close:hover { color: var(--danger); }
   .lives { text-align: center; }
   .lives-label, .score-label {
     font-family: var(--font-mono);
@@ -357,7 +504,100 @@
     .tier-icon { width: 18px; height: 18px; }
   }
 
-  /* ---- Stage badge + switch button ---- */
+  /* ---- Rainbow tutorial popup ---- */
+  .rainbow-tutorial {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: linear-gradient(135deg, rgba(255,75,180,0.95), rgba(255,200,75,0.95));
+    color: #200;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 10px 16px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(255,100,180,0.5), 0 0 0 2px rgba(255,255,255,0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 10;
+    text-align: center;
+    max-width: 280px;
+  }
+  .rainbow-tutorial.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    animation: rainbowTutorial 2s ease-in-out infinite;
+  }
+  .rainbow-tutorial::after {
+    content: '↓ click the rainbow!';
+    display: block;
+    font-weight: 700;
+    font-size: 13px;
+    margin-top: 4px;
+    letter-spacing: 0.1em;
+  }
+  @keyframes rainbowTutorial {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(-4px); }
+  }
+
+  /* ---- Stage strip (Stage 1 | Stage 2 visible + locked indicator) ---- */
+  .stage-strip {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+  }
+  .strip-stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: rgba(255,212,163,0.05);
+    border: 1px solid rgba(255,212,163,0.15);
+    padding: 6px 10px;
+    border-radius: 99px;
+    position: relative;
+    overflow: hidden;
+  }
+  .strip-stage.active {
+    background: rgba(255,212,163,0.16);
+    color: var(--accent);
+    border-color: rgba(255,212,163,0.4);
+  }
+  .strip-stage.locked {
+    color: var(--text-dim);
+    opacity: 0.65;
+  }
+  .strip-stage.locked::before {
+    content: '\1F512';
+    margin-right: 2px;
+    font-size: 11px;
+  }
+  .strip-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent-hot);
+    transition: width 0.4s ease-out;
+  }
+  .strip-progress.hidden { display: none; }
+  .strip-divider {
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
   .stage-row {
     display: flex;
     align-items: center;
@@ -382,6 +622,12 @@
     background: rgba(255, 122, 92, 0.18);
     border-color: rgba(255, 200, 100, 0.4);
     box-shadow: 0 0 8px rgba(255, 122, 92, 0.3);
+  }
+  .stage-badge.stage3 {
+    color: #b8d8ff;
+    background: rgba(80, 140, 220, 0.25);
+    border-color: rgba(160, 200, 255, 0.45);
+    box-shadow: 0 0 10px rgba(120, 170, 230, 0.45);
   }
   .stage-btn {
     display: none;
@@ -496,11 +742,18 @@
 <div class="stage">
   <div class="topbar">
     <div>
-      <div class="title">Popo <em>O</em> Drop</div>
+      <div class="title" id="titleTap">Popo <em>O</em> Drop</div>
       <div class="stage-row">
         <span class="stage-badge" id="stageBadge">STAGE 1</span>
         <button class="stage-btn" id="stageBtn" onclick="acceptStage2()">SWITCH TO STAGE 2 ▸</button>
       </div>
+    </div>
+    <div class="cheat-panel" id="cheatPanel">
+      <span class="cheat-label">cheat</span>
+      <button class="cheat-stage-btn" onclick="activateCheat(1)">S1</button>
+      <button class="cheat-stage-btn" onclick="activateCheat(2)">S2</button>
+      <button class="cheat-stage-btn" onclick="activateCheat(3)">S3</button>
+      <button class="cheat-close" onclick="hideCheatPanel()">×</button>
     </div>
     <div class="lives">
       <div class="lives-label">drops left</div>
@@ -515,6 +768,20 @@
     </div>
   </div>
 
+  <div class="stage-strip">
+    <div class="strip-stage" id="stripStage1">stage 1</div>
+    <span class="strip-divider">▸</span>
+    <div class="strip-stage locked" id="stripStage2">
+      stage 2
+      <div class="strip-progress" id="stripProgress" style="width: 0%"></div>
+    </div>
+    <span class="strip-divider">▸</span>
+    <div class="strip-stage locked" id="stripStage3">
+      stage 3
+      <div class="strip-progress hidden" id="stripProgress3" style="width: 0%"></div>
+    </div>
+  </div>
+
   <div class="game-shake" id="gameShake">
     <div class="game-tilt" id="gameTilt">
       <canvas id="game" width="420" height="560"></canvas>
@@ -524,6 +791,7 @@
       </div>
       <div class="combo-pill" id="comboPill">combo <b id="comboNum">x2</b></div>
       <div class="bonus-banner" id="bonusBanner"></div>
+      <div class="rainbow-tutorial" id="rainbowTutorial" data-en="You made a rainbow! Tap it to pop for +1000!" data-th="ได้ดอกไม้สายรุ้งแล้ว! แตะเพื่อระเบิดรับ +1000!">You made a rainbow! Tap it to pop for +1000!</div>
       <div class="overlay" id="overlay">
         <h2>Game Over</h2>
         <div class="final-label">final score</div>
@@ -537,7 +805,7 @@
         <h2 class="stage-modal-title">Stage 2 Unlocked</h2>
         <p class="stage-modal-body">
           A bumpier, curvier bowl awaits.<br>
-          Every point you score is worth <b>3×</b>.<br>
+          Every point you score is worth <b>2×</b>.<br>
           <span class="stage-modal-warn">Once you switch, you can't go back until the game ends.</span>
         </p>
         <div class="stage-modal-buttons">
@@ -571,8 +839,136 @@
     </button>
   </div>
 
-  <div class="hint">click to drop &middot; matching shapes merge &middot; tap the rainbow to pop &middot; +1 life every 10,000 pts</div>
+  <div class="hint" data-en="click to drop · matching shapes merge · tap the rainbow to pop · +1 life every 10,000 pts" data-th="คลิกเพื่อหย่อน · จับคู่ของชิ้นเดียวกันเพื่อรวม · แตะดอกไม้สายรุ้งเพื่อระเบิด · +1 ชีวิตทุก ๆ 10,000 คะแนน">click to drop &middot; matching shapes merge &middot; tap the rainbow to pop &middot; +1 life every 10,000 pts</div>
 </div>
+
+<aside class="side-panel">
+  <div class="side-header">
+    <div class="side-title" data-en="How to Play" data-th="วิธีเล่น">How to Play</div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" data-lang="th" onclick="setLang('th')">ไทย</button>
+    </div>
+  </div>
+
+  <div class="htp-section">
+    <h3 data-en="🎯 The Goal" data-th="🎯 วิธีการเล่น">🎯 The Goal</h3>
+    <p data-en="Drop shapes into the bowl. When two of the same kind touch, they merge into the next tier. Keep merging until you make the rainbow flower!"
+       data-th="ปล่อยเหล่าพรรคพวก โปโปะ ลงในชาม เมื่อมีตัวละครที่เหมือนกันชนกันจะรวมเป็นชิ้นใหม่ และ รวมไปเรื่อย ๆ จนกว่าจะถึงขนาดใหญ่ที่สุด">
+      Drop shapes into the bowl. When two of the same kind touch, they merge into the next tier. Keep merging until you make the rainbow flower!
+    </p>
+  </div>
+
+  <div class="htp-section">
+    <h3 data-en="🎮 Controls" data-th="🎮 การควบคุม">🎮 Controls</h3>
+    <ul>
+      <li data-en="<span class='key-hint'>Move mouse</span> to aim, <span class='key-hint'>click</span> to drop"
+          data-th="<span class='key-hint'>เลื่อนเมาส์</span> เพื่อเล็ง <span class='key-hint'>คลิก</span> เพื่อหย่อน">
+        <span class="key-hint">Move mouse</span> to aim, <span class="key-hint">click</span> to drop
+      </li>
+      <li data-en="Hold <span class='key-hint'>A</span> / <span class='key-hint'>D</span> to tilt the bowl left/right"
+          data-th="กด <span class='key-hint'>A</span> / <span class='key-hint'>D</span> ค้างเพื่อเอียงชามซ้าย/ขวา">
+        Hold <span class="key-hint">A</span> / <span class="key-hint">D</span> to tilt the bowl left/right
+      </li>
+      <li data-en="Press <span class='key-hint'>Space</span> to shake the bowl"
+          data-th="กด <span class='key-hint'>Space</span> เพื่อเขย่าชาม">
+        Press <span class="key-hint">Space</span> to shake the bowl
+      </li>
+    </ul>
+  </div>
+
+  <div class="htp-section">
+    <h3 data-en="💖 Lives & Scoring" data-th="💖 การเก็บแต้ม และ ไลฟ์พ้อยต์">💖 Lives & Scoring</h3>
+    <ul>
+      <li data-en="You have 5 drops — if 5 shapes fall off the bowl, game over"
+          data-th="มีไลฟ์พ้อยทั้งหมด 5 ชีวิต เมื่อพรรคพวกโปโปะตกออกไปนอกชามจะเสีย 1 ชีวิต/ครั้ง">
+        You have 5 drops — if 5 shapes fall off the bowl, game over
+      </li>
+      <li data-en="Every 10,000 points = +1 extra life"
+          data-th="ทุก 10,000 แต้ม จะได้ +1 ไลฟ์พ้อยต์">
+        Every 10,000 points = +1 extra life
+      </li>
+      <li data-en="Combo merges quickly for x2, x3, x4... multipliers"
+          data-th="เมื่อเกิดการรวมติดต่อกันจะได้คะแนน คอมโบ เพิ่มเติม">
+        Combo merges quickly for x2, x3, x4... multipliers
+      </li>
+      <li data-en="Make the rainbow flower → tap it to pop for +1000 bonus!"
+          data-th="สามารถกด &quot;โปโปะสีรุ้งเพื่อรับแต้มโบนัสได้&quot; +1000 แต้ม">
+        Make the rainbow flower → tap it to pop for <b>+1000</b> bonus!
+      </li>
+    </ul>
+  </div>
+
+  <div class="htp-section">
+    <h3 data-en="🌟 Stage 2 (Unlock at 10K)" data-th="🌟 ด่าน 2 (ปลดล็อกที่ 10,000)">🌟 Stage 2 (Unlock at 10K)</h3>
+    <ul>
+      <li data-en="<b>2× score</b> on everything"
+          data-th="คะแนน <b>คูณ 2</b> ทุกอย่าง">
+        <b>2× score</b> on everything
+      </li>
+      <li data-en="The bowl is a balancing scale — tilt to keep it level"
+          data-th="ชามทำหน้าที่เหมือนตาชั่ง — เอียงเพื่อรักษาสมดุล">
+        The bowl is a balancing scale — tilt to keep it level
+      </li>
+      <li data-en="Wider, flared rim makes objects easier to lose"
+          data-th="ขอบกว้างและบานออก ของจะหล่นง่ายขึ้น">
+        Wider, flared rim makes objects easier to lose
+      </li>
+      <li data-en="💣 Beware of bombs! 3 drops after appearing they explode and knock everything around"
+          data-th="💣 ระวังระเบิด! เมื่อเข้าด่าน 2 จะทำการสุ่มระเบิดออกมาเป็นครั้งคราว วางมันดี ๆ หละ">
+        💣 Beware of bombs! 3 drops after appearing they explode and knock everything around
+      </li>
+      <li data-en="No going back to Stage 1 until game over"
+          data-th="เลือกแล้วกลับด่านแรกไม่ได้นะ">
+        No going back to Stage 1 until game over
+      </li>
+    </ul>
+  </div>
+
+  <div class="htp-section">
+    <h3 data-en="🌠 Stage 3 (Unlock at 40K)" data-th="🌠 ด่าน 3 (ปลดล็อกที่ 40,000)">🌠 Stage 3 (Unlock at 40K)</h3>
+    <ul>
+      <li data-en="<b>3× score</b> on everything"
+          data-th="คะแนน <b>คูณ 3</b> ทุกอย่าง">
+        <b>3× score</b> on everything
+      </li>
+      <li data-en="🌙 Gravity flips between LOW and NORMAL every 10 drops — warning HUD appears"
+          data-th="🌙 แรงโน้มถ่วงสลับระหว่างต่ำและปกติทุก 10 รอบ จะมีคำเตือนแจ้ง">
+        🌙 Gravity flips between LOW and NORMAL every 10 drops
+      </li>
+      <li data-en="☄ Asteroids occasionally crash in — they tilt the bowl on impact"
+          data-th="☄ ดาวเคราะห์น้อยจะพุ่งเข้ามาเป็นครั้งคราว ทำให้ชามเอียง">
+        ☄ Asteroids occasionally crash in — they tilt the bowl on impact
+      </li>
+      <li data-en="Two asteroids that collide cancel each other out"
+          data-th="ดาวเคราะห์น้อยสองดวงชนกันจะหายไปทั้งคู่">
+        Two asteroids that collide cancel each other out
+      </li>
+      <li data-en="Bombs from Stage 2 are still around"
+          data-th="ระเบิดจากด่าน 2 ยังคงอยู่">
+        Bombs from Stage 2 are still around
+      </li>
+    </ul>
+  </div>
+
+  <div class="htp-section">
+    <h3 data-en="💡 Tips" data-th="💡 เทคนิค">💡 Tips</h3>
+    <ul>
+      <li data-en="Save shake for stuck piles — it's free to use"
+          data-th="เก็บการเขย่าไว้ใช้ตอนของติด — ใช้ฟรีไม่จำกัด">
+        Save shake for stuck piles — it's free to use
+      </li>
+      <li data-en="Tilt stamina drains fast — short bursts work better"
+          data-th="พลังเอียงหมดเร็ว — ใช้เป็นช่วงสั้น ๆ จะดีกว่า">
+        Tilt stamina drains fast — short bursts work better
+      </li>
+      <li data-en="Newly dropped shapes fall straight even when tilted"
+          data-th="ของที่เพิ่งหย่อนจะตกตรง แม้ชามจะเอียง">
+        Newly dropped shapes fall straight even when tilted
+      </li>
+    </ul>
+  </div>
+</aside>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 <script>
@@ -659,9 +1055,39 @@ let imagesReady = false;
 let stage = 1;
 let stage2Unlocked = false;
 let stage2Prompted = false;
-const STAGE_MULT = [0, 1, 3];           // index by stage
+let stage3Unlocked = false;
+const STAGE_MULT = [0, 1, 2, 3];        // index by stage
 const STAGE2_THRESHOLD = 10000;
+const STAGE3_THRESHOLD = 40000;
 let isPaused = false;
+let rainbowTutorialShown = false;
+
+// Stage 2 balancing scale: bowl tilts based on left-right weight distribution
+let bowlTilt = 0;          // current actual tilt angle (radians)
+let bowlTiltTarget = 0;    // weight-driven target tilt
+let bowlImpulseTilt = 0;   // additional tilt from asteroid impacts (decays)
+
+// Bomb system (Stage 2+): rare bomb objects explode after N drops
+let drops_since_bomb = 0;
+let bomb_cooldown_drops = 12;
+const BOMB_TIER_R = 26;
+const BOMB_TIMER_DROPS = 3;
+
+// Stage 3: low-gravity flips, asteroids
+let s3_drops_since_grav = 0;     // counts drops; flips gravity every 10
+let s3_low_gravity = false;
+let asteroid_cooldown_drops = 5;
+const ASTEROID_R = 26;            // size of tier 2 (onion)
+const GRAV_NORMAL = 1.0;
+const GRAV_LOW = 0.35;
+
+// Cheat-code sequence buffer for stage testing
+let cheatBuffer = [];
+const CHEAT_CODES = {
+  'Up,Up,Up,Left,Down,Up':         1,
+  'Down,Down,Down,Right,Up,Down':  2,
+  'Right,Left,Right,Left,Up,Down': 3,
+};
 
 const canvas = document.getElementById('game');
 
@@ -746,6 +1172,33 @@ function playMileage(big) { playChime(big ? [523, 659, 784, 1047] : [392, 494, 5
 function playRainbow()    { playChime([523, 659, 784, 988, 1175, 1319], 0.18); }
 function playExtraLife()  { playChime([659, 784, 988, 1319], 0.18); }
 function playGameOver()   { playChime([392, 311, 247, 196], 0.18); }
+function playBoom() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  // Low rumble
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 400;
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(120, now);
+  osc.frequency.exponentialRampToValueAtTime(40, now + 0.4);
+  gain.gain.setValueAtTime(0.35, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+  osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(now); osc.stop(now + 0.46);
+  // High crack
+  const osc2 = audioCtx.createOscillator();
+  const gain2 = audioCtx.createGain();
+  osc2.type = 'square';
+  osc2.frequency.setValueAtTime(2000, now);
+  osc2.frequency.exponentialRampToValueAtTime(150, now + 0.18);
+  gain2.gain.setValueAtTime(0.18, now);
+  gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.20);
+  osc2.connect(gain2); gain2.connect(audioCtx.destination);
+  osc2.start(now); osc2.stop(now + 0.22);
+}
 
 // ============================================================
 // INIT
@@ -801,6 +1254,20 @@ function init() {
   }, { passive: false });
 
   document.addEventListener('keydown', (e) => {
+    // Cheat code sequence — arrow keys
+    if (e.code.startsWith('Arrow')) {
+      const dir = e.code.replace('Arrow', '');
+      cheatBuffer.push(dir);
+      if (cheatBuffer.length > 6) cheatBuffer.shift();
+      const seq = cheatBuffer.join(',');
+      for (const code in CHEAT_CODES) {
+        if (seq === code) {
+          activateCheat(CHEAT_CODES[code]);
+          cheatBuffer = [];
+          break;
+        }
+      }
+    }
     if (e.repeat) return;
     if (e.code === 'Space') { e.preventDefault(); ensureAudio(); shake(); }
     if (e.code === 'KeyA')  { ensureAudio(); tiltStart(-1); }
@@ -814,17 +1281,47 @@ function init() {
   runner = Runner.create();
   Runner.run(runner, engine);
   pickNext();
+  updateStageStrip();
+  bindTitleTap();
   setInterval(tiltLoop, 50);
 }
 
 // Return a point along the bowl outline at angle `a` (PI..2PI).
-// In stage 2 the radius is sin-modulated to create bumps/divots.
+// Stage 2: wider opening + shallower, with layered ASYMMETRIC bumps so
+// the left and right sides differ. The bowl looks like a hand-shaped vessel.
 function bowlPoint(a) {
   const t = (a - Math.PI) / Math.PI;     // 0..1 along the curve
-  const mod = stage === 2 ? (1 + 0.12 * Math.sin(t * Math.PI * 6)) : 1;
+  let rx, ry, mod;
+  if (stage === 2) {
+    rx = (PLATE_OPEN_W / 2) * 1.10;
+    ry = PLATE_DEPTH * 0.78;
+    // Layered noise: three sin waves with different frequencies, amplitudes,
+    // and phase offsets. Phase offsets make left half ≠ right half.
+    const inLowerCurve = t > 0.10 && t < 0.90;
+    let bump = 0;
+    if (inLowerCurve) {
+      bump += 0.13 * Math.sin(t * Math.PI * 4.0 + 0.7);   // big wave, slight phase
+      bump += 0.07 * Math.sin(t * Math.PI * 7.3 + 2.1);   // medium wave
+      bump += 0.04 * Math.sin(t * Math.PI * 11.5 + 4.3);  // small detail wave
+      // Slight overall lean (left side a touch deeper than right)
+      bump += 0.04 * (t - 0.5);
+    }
+    mod = 1 + bump;
+  } else if (stage === 3) {
+    // Less bumpy than Stage 2 — low gravity is enough of a hazard
+    rx = (PLATE_OPEN_W / 2) * 1.08;
+    ry = PLATE_DEPTH * 0.85;
+    const inLowerCurve = t > 0.20 && t < 0.80;
+    const bump = inLowerCurve ? 0.05 * Math.sin(t * Math.PI * 5.0 + 1.3) : 0;
+    mod = 1 + bump;
+  } else {
+    rx = PLATE_OPEN_W / 2;
+    ry = PLATE_DEPTH;
+    mod = 1;
+  }
   return {
-    x: PLATE_CENTER_X + (PLATE_OPEN_W / 2) * mod * Math.cos(a),
-    y: PLATE_OPEN_Y   - PLATE_DEPTH       * mod * Math.sin(a),
+    x: PLATE_CENTER_X + rx * mod * Math.cos(a),
+    y: PLATE_OPEN_Y   - ry * mod * Math.sin(a),
   };
 }
 
@@ -836,7 +1333,10 @@ function removeBowl() {
 }
 
 function buildBowl() {
-  const segments = stage === 2 ? 44 : 30;   // more segments for smoother bumps
+  const segments = stage === 1 ? 30 : 40;
+  const wallColor = stage === 3 ? 'rgba(110, 140, 200, 0.4)'
+                  : stage === 2 ? 'rgba(160, 110, 180, 0.4)'
+                  :               'rgba(120, 100, 160, 0.35)';
   const bodies = [];
   for (let i = 0; i < segments; i++) {
     const a1 = Math.PI + (i / segments) * Math.PI;
@@ -847,15 +1347,35 @@ function buildBowl() {
     const my = (p1.y + p2.y) / 2;
     const segLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
     const segAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-    bodies.push(Bodies.rectangle(mx, my, segLen + 6, WALL_THICKNESS, {
+    const seg = Bodies.rectangle(mx, my, segLen + 6, WALL_THICKNESS, {
       isStatic: true,
       angle: segAngle,
       friction: 0.5,
       label: 'bowl',
-      render: { fillStyle: stage === 2 ? 'rgba(160, 110, 180, 0.4)' : 'rgba(120, 100, 160, 0.35)' }
-    }));
+      render: { fillStyle: wallColor }
+    });
+    seg._restX = mx;
+    seg._restY = my;
+    seg._restAngle = segAngle;
+    bodies.push(seg);
   }
   World.add(engine.world, bodies);
+}
+
+// Rotate every bowl segment around the bowl's pivot — visualizes the balancing scale.
+function applyBowlRotation(angle) {
+  const cos = Math.cos(angle), sin = Math.sin(angle);
+  const px = PLATE_CENTER_X, py = PLATE_OPEN_Y + 8;   // pivot point
+  const bodies = Composite.allBodies(engine.world);
+  for (const b of bodies) {
+    if (b.label !== 'bowl' || b._restX === undefined) continue;
+    const dx = b._restX - px;
+    const dy = b._restY - py;
+    const nx = px + dx * cos - dy * sin;
+    const ny = py + dx * sin + dy * cos;
+    Body.setPosition(b, { x: nx, y: ny });
+    Body.setAngle(b, b._restAngle + angle);
+  }
 }
 
 function buildTierGuide() {
@@ -872,6 +1392,30 @@ function buildTierGuide() {
       arr.textContent = '\u25B8';
       container.appendChild(arr);
     }
+  }
+}
+
+function updateStageStrip() {
+  document.getElementById('stripStage1').classList.toggle('active', stage === 1);
+  document.getElementById('stripStage2').classList.toggle('active', stage === 2);
+  document.getElementById('stripStage2').classList.toggle('locked', !stage2Unlocked);
+  document.getElementById('stripStage3').classList.toggle('active', stage === 3);
+  document.getElementById('stripStage3').classList.toggle('locked', !stage3Unlocked);
+
+  // Progress bar on whichever next stage is locked
+  const p1 = document.getElementById('stripProgress');
+  const p2 = document.getElementById('stripProgress3');
+  if (!stage2Unlocked) {
+    p1.style.width = Math.min(100, (score / STAGE2_THRESHOLD) * 100) + '%';
+    p1.classList.remove('hidden');
+  } else {
+    p1.classList.add('hidden');
+  }
+  if (stage2Unlocked && !stage3Unlocked) {
+    p2.style.width = Math.min(100, (score / STAGE3_THRESHOLD) * 100) + '%';
+    p2.classList.remove('hidden');
+  } else {
+    p2.classList.add('hidden');
   }
 }
 
@@ -931,14 +1475,103 @@ function makeBall(x, y, tier) {
   return ball;
 }
 
+function makeBomb(x, y) {
+  const opts = {
+    restitution: 0.06,
+    friction: 0.55,
+    frictionStatic: 0.75,
+    density: 0.0014,
+    label: 'bomb',
+    render: { fillStyle: 'rgba(0,0,0,0)' }
+  };
+  const ball = Bodies.circle(x, y, BOMB_TIER_R, opts);
+  ball._isBomb = true;
+  ball._bornAt = Date.now();
+  ball._fuseDropsLeft = BOMB_TIMER_DROPS;
+  return ball;
+}
+
 function drop() {
   if (!canDrop || isOver || isPaused) return;
-  const ball = makeBall(dropX, DROP_Y, nextTier);
+
+  // Snapshot existing bombs BEFORE we add anything new so the bomb we
+  // might be about to spawn doesn't immediately decrement its own fuse.
+  const existingBombs = Composite.allBodies(engine.world).filter(b => b._isBomb);
+
+  // Decide if this drop is a bomb (Stage 2+ only, low chance, with cooldown)
+  let isBomb = false;
+  if (stage >= 2 && bomb_cooldown_drops <= 0) {
+    // ~12% chance per drop after cooldown — slightly more frequent than before
+    if (Math.random() < 0.12) isBomb = true;
+  }
+
+  let ball;
+  if (isBomb) {
+    ball = makeBomb(dropX, DROP_Y);
+    bomb_cooldown_drops = 7;       // shorter forced gap = bombs feel more common
+  } else {
+    ball = makeBall(dropX, DROP_Y, nextTier);
+    if (bomb_cooldown_drops > 0) bomb_cooldown_drops--;
+  }
   ball._straightUntil = Date.now() + STRAIGHT_DROP_MS;
   World.add(engine.world, ball);
+
+  // Only decrement bombs that existed before this drop — never the new one
+  for (const b of existingBombs) {
+    if (!b._isBomb || b._fuseDropsLeft === undefined) continue;
+    b._fuseDropsLeft--;
+    if (b._fuseDropsLeft <= 0) detonateBomb(b);
+  }
+
+  // Stage 3 drop counter for gravity flips
+  if (stage === 3) {
+    s3_drops_since_grav++;
+    if (s3_drops_since_grav >= 10) flipGravity();
+    maybeSpawnAsteroid();
+  }
+
   canDrop = false;
   setTimeout(() => canDrop = true, 450);
   pickNext();
+}
+
+function detonateBomb(bomb) {
+  const x = bomb.position.x, y = bomb.position.y;
+  // Stronger knockback — larger radius + ~2.5× base force so heavy balls really feel it
+  const radius = 180;
+  const baseForce = 0.080;
+  const bodies = Composite.allBodies(engine.world);
+  for (const b of bodies) {
+    if (b.isStatic || b === bomb) continue;
+    const dx = b.position.x - x;
+    const dy = b.position.y - y;
+    const dist = Math.hypot(dx, dy);
+    if (dist > radius || dist < 1) continue;
+    // Quadratic falloff feels punchier near the bomb, gentler at the edge
+    const falloff = Math.pow(1 - dist / radius, 1.4);
+    const dir = { x: dx / dist, y: dy / dist };
+    const f = baseForce * falloff;
+    Body.applyForce(b, b.position, { x: dir.x * f, y: dir.y * f - 0.012 });
+    // Also kick angular velocity so balls tumble
+    Body.setAngularVelocity(b, b.angularVelocity + (Math.random() - 0.5) * 0.3);
+  }
+  // Visual explosion
+  for (let i = 0; i < 28; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp = 2 + Math.random() * 5;
+    particles.push({
+      x, y,
+      vx: Math.cos(ang) * sp,
+      vy: Math.sin(ang) * sp - 1,
+      life: 1,
+      decay: 0.018 + Math.random() * 0.015,
+      size: 3 + Math.random() * 4,
+      color: ['#ff3838', '#ff7a1f', '#ffcc33', '#fff'][Math.floor(Math.random() * 4)]
+    });
+  }
+  World.remove(engine.world, bomb);
+  playBoom();
+  cameraShake(1.6);
 }
 
 // Cancel horizontal gravity on fresh balls so a drop falls straight while tilted.
@@ -1001,6 +1634,27 @@ function clampInsideBowl(x, y, r) {
 }
 
 function onCollide(event) {
+  // First pass: asteroid-vs-bowl impulse, asteroid-vs-asteroid merge
+  for (const pair of event.pairs) {
+    const a = pair.bodyA, b = pair.bodyB;
+    // Asteroid hitting bowl wall
+    if (a._isAsteroid && b.label === 'bowl') asteroidHitBowl(a);
+    if (b._isAsteroid && a.label === 'bowl') asteroidHitBowl(b);
+    // Two asteroids colliding — both disappear with a poof
+    if (a._isAsteroid && b._isAsteroid && !a._merged && !b._merged) {
+      a._merged = b._merged = true;
+      const mx = (a.position.x + b.position.x) / 2;
+      const my = (a.position.y + b.position.y) / 2;
+      spawnBurst(mx, my, '#c8c8e0', 18);
+      spawnBurst(mx, my, '#ffcc88', 10);
+      World.remove(engine.world, a);
+      World.remove(engine.world, b);
+      cameraShake(0.5);
+      // small score reward
+      addScore(15);
+    }
+  }
+
   const consumed = new Set();
   for (const pair of event.pairs) {
     const a = pair.bodyA, b = pair.bodyB;
@@ -1044,17 +1698,29 @@ function onCollide(event) {
     playPop(newTier, comboCount);
 
     if (newTier >= 5) awardMileage(newTier, safe.x, safe.y);
+
+    // Rainbow pop tutorial (first time only)
+    if (newTier === TIERS.length - 1 && !rainbowTutorialShown) {
+      rainbowTutorialShown = true;
+      setTimeout(() => showRainbowTutorial(newBall), 700);
+    }
   }
 }
 
 function addScore(n) {
   score += n * STAGE_MULT[stage];
   document.getElementById('score').textContent = score;
+  updateStageStrip();
   // Stage 2 unlock prompt
   if (stage === 1 && !stage2Prompted && score >= STAGE2_THRESHOLD) {
     stage2Prompted = true;
     stage2Unlocked = true;
-    showStage2Modal();
+    showStageModal(2);
+  }
+  // Stage 3 unlock prompt (only show if already on stage 2)
+  if (stage === 2 && !stage3Unlocked && score >= STAGE3_THRESHOLD) {
+    stage3Unlocked = true;
+    showStageModal(3);
   }
   // 10,000-point bonus life
   while (score >= nextLifeMilestone) {
@@ -1085,40 +1751,218 @@ function awardExtraLife() {
 }
 
 // ============================================================
-// STAGE 2 — unlock modal, switch, wavy bowl rebuild
+// STAGE SYSTEM — modal, switch, wavy bowl rebuild
 // ============================================================
-function showStage2Modal() {
-  document.getElementById('stage2Modal').classList.add('active');
+let _pendingStage = 2;
+function showStageModal(targetStage) {
+  _pendingStage = targetStage;
+  const modal = document.getElementById('stage2Modal');
+  const mult = STAGE_MULT[targetStage];
+  // Update the modal copy for whichever stage we're prompting
+  modal.querySelector('.stage-modal-label').textContent =
+    (targetStage === 3 ? '40,000' : '10,000') + ' points reached';
+  modal.querySelector('.stage-modal-title').textContent =
+    'Stage ' + targetStage + ' Unlocked';
+  modal.querySelector('.stage-modal-body').innerHTML =
+    (targetStage === 3
+      ? 'A low-gravity, asteroid-strewn arena.<br>Every point you score is worth <b>' + mult + '×</b>.<br><span class="stage-modal-warn">No going back once you switch.</span>'
+      : 'A bumpier, curvier bowl awaits.<br>Every point you score is worth <b>' + mult + '×</b>.<br><span class="stage-modal-warn">No going back once you switch.</span>');
+  modal.querySelector('.stage-modal-btn.primary').textContent = 'switch now ▸';
+  modal.classList.add('active');
   isPaused = true;
   Runner.stop(runner);
 }
 
 function acceptStage2() {
   document.getElementById('stage2Modal').classList.remove('active');
-  switchToStage2();
+  switchToStage(_pendingStage);
   isPaused = false;
   Runner.run(runner, engine);
 }
 
 function declineStage2() {
   document.getElementById('stage2Modal').classList.remove('active');
-  // Show the manual switch button — they can flip later
   document.getElementById('stageBtn').style.display = 'inline-flex';
+  document.getElementById('stageBtn').textContent =
+    'SWITCH TO STAGE ' + _pendingStage + ' ▸';
   isPaused = false;
   Runner.run(runner, engine);
 }
 
-function switchToStage2() {
-  if (stage === 2) return;
-  stage = 2;
+function switchToStage(target) {
+  if (target <= stage) return;     // no going back
+  stage = target;
   removeBowl();
   buildBowl();
+  bowlTilt = 0;
+  bowlImpulseTilt = 0;
+  applyBowlRotation(0);
   document.getElementById('stageBtn').style.display = 'none';
-  document.getElementById('stageBadge').textContent = 'STAGE 2 (3X)';
-  document.getElementById('stageBadge').classList.add('stage2');
-  showBonus('Stage 2 unlocked — 3x score!');
+  const badge = document.getElementById('stageBadge');
+  badge.textContent = 'STAGE ' + target + ' (' + STAGE_MULT[target] + 'X)';
+  badge.classList.remove('stage2', 'stage3');
+  badge.classList.add('stage' + target);
+  showBonus('Stage ' + target + ' unlocked — ' + STAGE_MULT[target] + 'x score!');
   playMileage(true);
   cameraShake(0.8);
+  // Reset stage-3 specific state when entering
+  if (stage === 3) {
+    s3_drops_since_grav = 0;
+    s3_low_gravity = false;
+    engine.world.gravity.y = GRAV_NORMAL;
+    asteroid_cooldown_drops = 4;
+  }
+  updateStageStrip();
+}
+
+// ============================================================
+// STAGE 3 — gravity flips + asteroids
+// ============================================================
+function flipGravity() {
+  s3_drops_since_grav = 0;
+  s3_low_gravity = !s3_low_gravity;
+  engine.world.gravity.y = s3_low_gravity ? GRAV_LOW : GRAV_NORMAL;
+  showGravityWarning(s3_low_gravity);
+  playMileage(false);
+}
+
+function showGravityWarning(low) {
+  const banner = document.getElementById('bonusBanner');
+  banner.textContent = low ? '⚠ LOW GRAVITY' : '⚠ NORMAL GRAVITY';
+  banner.style.color = low ? '#8ad4ff' : '#ffd070';
+  banner.style.textShadow = low
+    ? '0 0 24px #8ad4ff, 0 2px 0 rgba(0,0,0,0.4)'
+    : '0 0 24px #ffd070, 0 2px 0 rgba(0,0,0,0.4)';
+  banner.classList.remove('show');
+  void banner.offsetWidth;
+  banner.classList.add('show');
+  // Reset banner color after the animation so other banners look normal
+  setTimeout(() => {
+    banner.style.color = '';
+    banner.style.textShadow = '';
+  }, 2000);
+}
+
+function maybeSpawnAsteroid() {
+  if (asteroid_cooldown_drops > 0) { asteroid_cooldown_drops--; return; }
+  if (Math.random() > 0.16) return;
+  asteroid_cooldown_drops = 4;
+  spawnAsteroid();
+}
+
+function spawnAsteroid() {
+  const side = Math.random() < 0.5 ? -1 : 1;
+  const startX = side === -1 ? -ASTEROID_R - 5 : W + ASTEROID_R + 5;
+  const targetX = PLATE_CENTER_X + (Math.random() - 0.5) * (PLATE_OPEN_W * 0.5);
+  const targetY = PLATE_OPEN_Y + 20;
+  const startY = 80 + Math.random() * 90;
+  const dx = targetX - startX;
+  const dy = targetY - startY;
+  const dist = Math.hypot(dx, dy);
+  const speed = 9 + Math.random() * 2;
+  const vx = (dx / dist) * speed;
+  const vy = (dy / dist) * speed;
+
+  const ast = Bodies.circle(startX, startY, ASTEROID_R, {
+    restitution: 0.3,
+    friction: 0.5,
+    frictionStatic: 0.6,
+    density: 0.0028,
+    label: 'asteroid',
+    render: { fillStyle: 'rgba(0,0,0,0)' }
+  });
+  ast._isAsteroid = true;
+  ast._bornAt = Date.now();
+  Body.setVelocity(ast, { x: vx, y: vy });
+  Body.setAngularVelocity(ast, (Math.random() - 0.5) * 0.4);
+  World.add(engine.world, ast);
+
+  if (audioCtx) {
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.5);
+    g.gain.setValueAtTime(0.12, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + 0.55);
+  }
+}
+
+function asteroidHitBowl(asteroid) {
+  if (asteroid._hitBowl) return;
+  asteroid._hitBowl = true;
+  const vx = asteroid.velocity.x;
+  const impulse = Math.max(-0.22, Math.min(0.22, vx * 0.030));
+  bowlImpulseTilt += impulse;
+  bowlImpulseTilt = Math.max(-0.30, Math.min(0.30, bowlImpulseTilt));
+  cameraShake(0.7);
+  for (let i = 0; i < 14; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp = 2 + Math.random() * 3;
+    particles.push({
+      x: asteroid.position.x, y: asteroid.position.y,
+      vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 0.5,
+      life: 1, decay: 0.025, size: 2 + Math.random() * 2,
+      color: ['#a0a0b0', '#d0d0e0', '#ffcc88'][Math.floor(Math.random() * 3)]
+    });
+  }
+  if (audioCtx) {
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(80, now);
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+    g.gain.setValueAtTime(0.32, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + 0.32);
+  }
+}
+
+// Cheat activator (arrow-key sequence)
+function activateCheat(target) {
+  if (target === stage) {
+    showBonus('already on stage ' + target);
+    return;
+  }
+  if (target < stage) {
+    showBonus('cant go back');
+    return;
+  }
+  if (target >= 2) stage2Unlocked = true;
+  if (target >= 3) stage3Unlocked = true;
+  switchToStage(target);
+  showBonus('cheat: stage ' + target);
+}
+
+// Cheat panel reveal — 5 quick taps on the title
+let _titleTaps = 0;
+let _titleTapTimer = null;
+function bindTitleTap() {
+  const t = document.getElementById('titleTap');
+  if (!t) return;
+  const handler = () => {
+    _titleTaps++;
+    if (_titleTapTimer) clearTimeout(_titleTapTimer);
+    _titleTapTimer = setTimeout(() => { _titleTaps = 0; }, 1500);
+    if (_titleTaps >= 5) {
+      _titleTaps = 0;
+      showCheatPanel();
+    }
+  };
+  t.addEventListener('click', handler);
+  t.addEventListener('touchend', (e) => { e.preventDefault(); handler(); }, { passive: false });
+}
+
+function showCheatPanel() {
+  document.getElementById('cheatPanel').classList.add('show');
+}
+function hideCheatPanel() {
+  document.getElementById('cheatPanel').classList.remove('show');
 }
 
 function awardMileage(newTier, x, y) {
@@ -1156,6 +2000,18 @@ function popFinalTier(body) {
   cameraShake(1.4);
 }
 
+function showRainbowTutorial(rainbowBody) {
+  const tip = document.getElementById('rainbowTutorial');
+  tip.classList.add('show');
+  // Auto-hide after 5s or when player taps anywhere
+  const hide = () => {
+    tip.classList.remove('show');
+    document.removeEventListener('click', hide);
+  };
+  setTimeout(hide, 6000);
+  setTimeout(() => document.addEventListener('click', hide), 600);
+}
+
 function showBonus(text) {
   const banner = document.getElementById('bonusBanner');
   banner.textContent = text;
@@ -1179,14 +2035,43 @@ function showComboPill(n) {
 function tickWorld() {
   const now = Date.now();
   const bodies = Composite.allBodies(engine.world);
+
+  // Stage 2/3 balancing scale: compute weight-driven bowl tilt
+  if (stage === 2 || stage === 3) {
+    let leftMoment = 0, rightMoment = 0;
+    for (const b of bodies) {
+      if (b.isStatic) continue;
+      if (b.tier === undefined && !b._isBomb && !b._isAsteroid) continue;
+      const dx = b.position.x - PLATE_CENTER_X;
+      const weight = b.mass * Math.abs(dx);
+      if (dx < 0) leftMoment += weight;
+      else        rightMoment += weight;
+    }
+    const net = rightMoment - leftMoment;
+    bowlTiltTarget = Math.max(-0.21, Math.min(0.21, net * 0.00009));
+    bowlTilt += (bowlTiltTarget - bowlTilt) * 0.06;
+    // Decay impulse tilt from asteroid impacts
+    bowlImpulseTilt *= 0.92;
+    if (Math.abs(bowlImpulseTilt) < 0.0005) bowlImpulseTilt = 0;
+    // Apply combined rotation (scale + impulse), clamped
+    const totalTilt = Math.max(-0.30, Math.min(0.30, bowlTilt + bowlImpulseTilt));
+    applyBowlRotation(totalTilt);
+  }
   for (const b of bodies) {
-    if (b.tier === undefined || b.isStatic || b._fallenOff) continue;
+    if (b.isStatic || b._fallenOff) continue;
+    if (b.tier === undefined && !b._isBomb && !b._isAsteroid) continue;
     if (now - (b._bornAt || 0) < SPAWN_FALL_GRACE_MS) continue;
     if (b.position.y > H + 50 || b.position.x < -50 || b.position.x > W + 50 || b.position.y < -120) {
       b._fallenOff = true;
+      if (b._isAsteroid) {
+        // Silent removal — asteroids are hazards, not the player's drops
+        World.remove(engine.world, b);
+        continue;
+      }
       const px = Math.max(0, Math.min(W, b.position.x));
       const py = Math.max(0, Math.min(H, b.position.y));
-      spawnBurst(px, py, TIERS[b.tier].glow, 10);
+      const burstColor = b._isBomb ? '#ff5533' : TIERS[b.tier].glow;
+      spawnBurst(px, py, burstColor, 10);
       World.remove(engine.world, b);
       registerFallOff();
     }
@@ -1286,6 +2171,7 @@ function drawHUD() {
 
   // ---- All ball images (drawn after the back-glow so the art reads clearly) ----
   for (const b of bodies) {
+    if (b._isBomb) continue;   // bombs drawn separately
     if (b.tier === undefined) continue;
     const img = tierImages[b.tier];
     const tDef = TIERS[b.tier];
@@ -1304,6 +2190,123 @@ function drawHUD() {
       ctx.arc(b.position.x, b.position.y, r, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
+    }
+  }
+
+  // ---- Bombs: red-orange with pulsing fuse + countdown number ----
+  for (const b of bodies) {
+    if (!b._isBomb) continue;
+    const r = BOMB_TIER_R;
+    const pulse = (Math.sin(now / (b._fuseDropsLeft <= 1 ? 80 : 180)) + 1) / 2;
+    const dangerHue = b._fuseDropsLeft <= 1 ? 0 : (b._fuseDropsLeft === 2 ? 18 : 28);
+
+    // Outer pulsing aura
+    ctx.save();
+    const aura = ctx.createRadialGradient(b.position.x, b.position.y, r * 0.6,
+                                          b.position.x, b.position.y, r * 1.9);
+    aura.addColorStop(0, `hsla(${dangerHue}, 100%, 60%, ${0.5 + pulse * 0.3})`);
+    aura.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = aura;
+    ctx.beginPath();
+    ctx.arc(b.position.x, b.position.y, r * 1.9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Bomb body — radial red-orange gradient
+    ctx.save();
+    ctx.translate(b.position.x, b.position.y);
+    ctx.rotate(b.angle);
+    const body = ctx.createRadialGradient(-r * 0.3, -r * 0.3, 2, 0, 0, r);
+    body.addColorStop(0, `hsl(${dangerHue + 20}, 100%, 75%)`);
+    body.addColorStop(0.5, `hsl(${dangerHue + 10}, 100%, 55%)`);
+    body.addColorStop(1, `hsl(${dangerHue}, 100%, 35%)`);
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+    // Dark rim
+    ctx.strokeStyle = `hsl(${dangerHue}, 80%, 20%)`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // Highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.beginPath();
+    ctx.arc(-r * 0.3, -r * 0.35, r * 0.22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Countdown number — always upright regardless of body rotation
+    ctx.save();
+    ctx.font = 'bold 22px "Fraunces", serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = `hsl(${dangerHue}, 80%, 20%)`;
+    ctx.lineWidth = 3;
+    ctx.strokeText(String(b._fuseDropsLeft), b.position.x, b.position.y);
+    ctx.fillText(String(b._fuseDropsLeft), b.position.x, b.position.y);
+    ctx.restore();
+  }
+
+  // ---- Asteroids: rocky grey with bright impact-side fringe ----
+  for (const b of bodies) {
+    if (!b._isAsteroid) continue;
+    const r = ASTEROID_R;
+    ctx.save();
+    ctx.translate(b.position.x, b.position.y);
+    ctx.rotate(b.angle);
+    const body = ctx.createRadialGradient(-r * 0.3, -r * 0.3, 2, 0, 0, r);
+    body.addColorStop(0, '#bcbcd0');
+    body.addColorStop(0.55, '#7a7a8e');
+    body.addColorStop(1, '#3a3a48');
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+    // Crater spots — deterministic per body so they don't flicker
+    const seed = b.id || 1;
+    ctx.fillStyle = 'rgba(0,0,0,0.32)';
+    for (let i = 0; i < 4; i++) {
+      const aa = (seed * 7 + i * 1.7) % (Math.PI * 2);
+      const cx = Math.cos(aa) * r * (0.35 + (i * 0.12) % 0.4);
+      const cy = Math.sin(aa) * r * (0.35 + (i * 0.12) % 0.4);
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3 + (i % 2) * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // Hot leading edge — orange tint on velocity-facing side
+    const spv = Math.hypot(b.velocity.x, b.velocity.y);
+    if (spv > 2) {
+      const ang = Math.atan2(b.velocity.y, b.velocity.x) - b.angle;
+      ctx.save();
+      ctx.rotate(ang);
+      const heat = ctx.createRadialGradient(r * 0.55, 0, 1, r * 0.55, 0, r * 0.9);
+      heat.addColorStop(0, 'rgba(255, 140, 60, 0.85)');
+      heat.addColorStop(1, 'rgba(255, 100, 30, 0)');
+      ctx.fillStyle = heat;
+      ctx.beginPath();
+      ctx.arc(r * 0.55, 0, r * 0.9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Trailing sparks
+    if (spv > 1.5 && Math.random() < 0.5) {
+      particles.push({
+        x: b.position.x - b.velocity.x * 0.5,
+        y: b.position.y - b.velocity.y * 0.5,
+        vx: -b.velocity.x * 0.1 + (Math.random() - 0.5) * 1,
+        vy: -b.velocity.y * 0.1 + (Math.random() - 0.5) * 1,
+        life: 0.8, decay: 0.04,
+        size: 1.5 + Math.random() * 1.5,
+        color: '#ffcc88'
+      });
     }
   }
 
@@ -1410,8 +2413,17 @@ function drawGlassBowl(ctx) {
   const cy = PLATE_OPEN_Y;
   const rx = PLATE_OPEN_W / 2;
   const ry = PLATE_DEPTH;
+  const pivotY = PLATE_OPEN_Y + 8;
 
   ctx.save();
+
+  // Rotate the whole glass overlay to match the physical bowl tilt
+  const tot = bowlTilt + bowlImpulseTilt;
+  if ((stage === 2 || stage === 3) && Math.abs(tot) > 0.0005) {
+    ctx.translate(cx, pivotY);
+    ctx.rotate(tot);
+    ctx.translate(-cx, -pivotY);
+  }
 
   // Build interior path that follows the actual bowl shape (wavy in stage 2)
   const steps = 60;
@@ -1573,6 +2585,21 @@ function gameOver() {
 }
 
 function restart() { location.reload(); }
+
+// ============================================================
+// LANGUAGE TOGGLE — flips every data-en/data-th element
+// ============================================================
+let currentLang = 'en';
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  document.querySelectorAll('[data-en]').forEach(el => {
+    const txt = el.dataset[lang];
+    if (txt !== undefined) el.innerHTML = txt;
+  });
+}
 
 window.addEventListener('load', init);
 </script>
